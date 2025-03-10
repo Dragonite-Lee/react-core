@@ -1,4 +1,3 @@
-import createElement from "./createElement";
 import { jsx as _jsx, jsxs as _jsxs } from "./custom-jsx/jsx-runtime";
 
 const Header = () => <h1 id="header">Hello, jsx</h1>;
