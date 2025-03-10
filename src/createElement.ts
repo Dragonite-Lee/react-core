@@ -1,19 +1,35 @@
+import { ElementType, jsxProps } from "./type";
+
 export default function createElement(
-  type: string | ((props: any) => any),
-  props: Record<string, any> | null,
+  type: ElementType,
+  props: jsxProps,
   ...children: any[]
 ) {
-  if (typeof type === 'function') {
+  if (typeof type === "function") {
     const result = type(props || {});
-    console.log('Function component result:', result);
-    if (result && typeof result === 'object' && 'type' in result) {
+
+    if (result && typeof result === "object" && "type" in result) {
+      const mergedChildren = result.props?.children || children;
       return {
         ...result,
-        children: result.children ? [...result.children, ...children] : children,
+        props: {
+          ...result.props,
+          children: mergedChildren,
+        },
       };
     }
-    console.warn('Invalid Virtual DOM from function component:', result);
-    return { type: type.name, props: result || {}, children };
+
+    return { type: type.name, props: result || {}, children: [] };
   }
-  return { type, props: props || {}, children };
+
+  const { children: propChildren, ...restProps } = props || {};
+  const mergedChildren = propChildren || children;
+
+  return {
+    type,
+    props: {
+      ...restProps,
+      children: mergedChildren,
+    },
+  };
 }

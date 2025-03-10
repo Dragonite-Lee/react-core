@@ -1,25 +1,24 @@
-import createElement from './createElement';
+import createElement from "./createElement";
+import { jsx as _jsx, jsxs as _jsxs } from "./custom-jsx/jsx-runtime";
 
-const Header = () => <h1 id="header">Hello, JSX Clone!</h1>;
+const Header = () => <h1 id="header">Hello, jsx</h1>;
 const Content = () => (
   <div id="content">
-    <p>This is a simple clone.</p>
-    <span>Nested span</span>
+    <p>This is a content.</p>
+    <span>하위 span</span>
   </div>
 );
 
-const App = () => {
+export default function App() {
   return (
     <div id="app">
       <h1>Hello</h1>
       <div>
-        <p>Nested 1</p>
-        <p>Nested 2</p>
+        <p>하위1</p>
+        <p>하위2</p>
       </div>
       <Header />
       <Content />
     </div>
   );
 };
-
-export default App;

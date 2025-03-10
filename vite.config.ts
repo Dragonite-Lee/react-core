@@ -1,29 +1,31 @@
-import { defineConfig } from 'vite';
-import babel from 'vite-plugin-babel';
-import path from 'path';
+import { defineConfig } from "vite";
+import babel from "vite-plugin-babel";
+import path from "path";
 
 export default defineConfig({
   plugins: [
     babel({
       filter: /\.[jt]sx$/, // .ts, .tsx, .js, .jsx 대상
       babelConfig: {
-        presets: ['@babel/preset-typescript'],
+        presets: ["@babel/preset-typescript"],
         plugins: [
           [
-            '@babel/plugin-transform-react-jsx',
+            "@babel/plugin-transform-react-jsx",
             {
-              runtime: 'classic',
-              pragma: 'createElement',
+              runtime: "automatic",
+              //   pragma: 'createElement',
+              development: true,
+              importSource: "custom-jsx",
             },
           ],
         ],
       },
     }),
     {
-      name: 'inject-createElement',
-      enforce: 'pre',
+      name: "inject-createElement",
+      enforce: "pre",
       transform(code, id) {
-        if (id.endsWith('.tsx') || id.endsWith('.jsx')) {
+        if (id.endsWith(".tsx") || id.endsWith(".jsx")) {
           return {
             code: `import createElement from './createElement';\n${code}`,
             map: null,
@@ -34,18 +36,11 @@ export default defineConfig({
   ],
   build: {
     minify: false,
-    rollupOptions: {
-      input: 'src/main.ts',
-      output: {
-        entryFileNames: '[name].js',
-        chunkFileNames: '[name].js',
-        manualChunks: undefined,
-      },
-    },
+    sourcemap: true,
   },
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, 'src'),
+      "custom-jsx": path.resolve(__dirname, "src/custom-jsx"),
     },
   },
 });
