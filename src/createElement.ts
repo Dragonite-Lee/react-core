@@ -4,32 +4,31 @@ export default function createElement(
   type: ElementType,
   props: jsxProps,
   ...children: any[]
-) {
+): { type: string | ElementType; props: any; children?: any[] } {
+  const safeProps = props ?? {};
+  const { children: propChildren, ...restProps } = safeProps;
+
   if (typeof type === "function") {
-    const result = type(props || {});
+    const result = type(restProps);
+    const isValidResult = result && typeof result === "object" && "type" in result;
+    const finalType = isValidResult ? result.type : type;
+    const finalProps = isValidResult ? { ...result.props } : (result ?? {});
+    const mergedChildren = (isValidResult ? result.props?.children : propChildren) ?? children;
 
-    if (result && typeof result === "object" && "type" in result) {
-      const mergedChildren = result.props?.children || children;
-      return {
-        ...result,
-        props: {
-          ...result.props,
-          children: mergedChildren,
-        },
-      };
-    }
-
-    return { type: type.name, props: result || {}, children: [] };
+    return {
+      type: finalType,
+      props: {
+        ...finalProps,
+        children: mergedChildren,
+      },
+    };
   }
-
-  const { children: propChildren, ...restProps } = props || {};
-  const mergedChildren = propChildren || children;
 
   return {
     type,
     props: {
       ...restProps,
-      children: mergedChildren,
+      children: propChildren ?? children,
     },
   };
 }

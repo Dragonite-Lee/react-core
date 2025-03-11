@@ -14,28 +14,16 @@ export default defineConfig({
             {
               runtime: "automatic",
               //   pragma: 'createElement',
-              development: true,
+              development: false,
               importSource: "custom-jsx",
             },
           ],
         ],
       },
     }),
-    // {
-    //   name: "inject-createElement",
-    //   enforce: "pre",
-    //   transform(code, id) {
-    //     if (id.endsWith(".tsx") || id.endsWith(".jsx")) {
-    //       return {
-    //         code: `import createElement from './createElement';\n${code}`,
-    //         map: null,
-    //       };
-    //     }
-    //   },
-    // },
   ],
   build: {
-    minify: false,
+    minify: true,
     sourcemap: true,
   },
   resolve: {
