@@ -23,7 +23,7 @@ export default defineConfig({
     }),
   ],
   build: {
-    minify: true,
+    minify: false,
     sourcemap: true,
   },
   resolve: {

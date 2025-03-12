@@ -2,24 +2,21 @@ import { ElementType, jsxProps } from "./type";
 
 export default function createElement(
   type: ElementType,
-  props: jsxProps,
+  props?: jsxProps,
   ...children: any[]
-): { type: string | ElementType; props: any; children?: any[] } {
-  const safeProps = props ?? {};
-  const { children: propChildren, ...restProps } = safeProps;
-
+): { type: string | ElementType; props: any } {
   if (typeof type === "function") {
-    const result = type(restProps);
-    const isValidResult = result && typeof result === "object" && "type" in result;
-    const finalType = isValidResult ? result.type : type;
-    const finalProps = isValidResult ? { ...result.props } : (result ?? {});
-    const mergedChildren = (isValidResult ? result.props?.children : propChildren) ?? children;
+    const result = type(props ?? {});
+
+    if (result && typeof result === "object" && "type" in result) {
+      return result;
+    }
 
     return {
-      type: finalType,
+      type,
       props: {
-        ...finalProps,
-        children: mergedChildren,
+        ...(result ?? {}),
+        children,
       },
     };
   }
@@ -27,8 +24,8 @@ export default function createElement(
   return {
     type,
     props: {
-      ...restProps,
-      children: propChildren ?? children,
+      ...(props ?? {}),
+      children: props?.children ?? children,
     },
   };
 }

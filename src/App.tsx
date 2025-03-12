@@ -1,6 +1,12 @@
 import { jsx as _jsx, jsxs as _jsxs } from "./custom-jsx/jsx-runtime";
 
-const Header = () => <h1 id="header">Hello, jsx</h1>;
+function Header() {
+  return (
+    <header>
+      <h1>My React Core</h1>
+    </header>
+  );
+}
 const Content = () => (
   <div id="content">
     <p>This is a content.</p>
@@ -20,4 +26,4 @@ export default function App() {
       <Content />
     </div>
   );
-};
+}
