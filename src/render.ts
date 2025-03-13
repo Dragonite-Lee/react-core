@@ -1,14 +1,5 @@
-export default function render(element: any, container: HTMLElement) {
-  // 텍스트 노드 추가 작업
-  if (typeof element === "string" || typeof element === "number") {
-    const textNode = document.createTextNode(element.toString());
-    container.appendChild(textNode);
-    return;
-  }
-  // 객체 생성 분기처리
-  if (!element || typeof element !== "object" || !element.type) {
-    return;
-  }
+function renderRealDOM(element: any) {
+
   // 돔 생성
   const dom = document.createElement(element.type);
 
@@ -28,5 +19,22 @@ export default function render(element: any, container: HTMLElement) {
       }
     }
   }
-  container.appendChild(dom);
+  return dom
 }
+
+export default function render(element: any, container: HTMLElement) {
+      // 텍스트 노드 추가 작업
+  if (typeof element === "string" || typeof element === "number") {
+    const textNode = document.createTextNode(element.toString());
+    container.appendChild(textNode);
+    return;
+  }
+  // 객체 생성 분기처리
+  if (!element || typeof element !== "object" || !element.type) {
+    return;
+  }
+
+  container.appendChild(renderRealDOM(element));
+}
+
+// 컴포넌트 유형이 항상다르다고 생각하여 diff를 진행하지 않고 트리 자체를 새로운 트리로 대체한다.
