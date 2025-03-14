@@ -13,3 +13,11 @@ export type JSXElement = JSXNode | string | number | boolean | null | undefined;
 
 export type JSX = (type: ElementType, config: jsxProps, key?: Key) => any;
 export type Key = string | number | bigint | undefined;
+
+export type VNode = {
+  type: string;
+  props?: {
+    [key: string]: string | number | Function | VNode | VNode[] | undefined;
+    children?: VNode | VNode[];
+  };
+};

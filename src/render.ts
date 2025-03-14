@@ -1,35 +1,53 @@
-function renderRealDOM(element: any) {
+import { VNode } from "./type";
 
-  // 돔 생성
+
+function renderRealDOM(element: VNode): HTMLElement {
+  // element type을 기반으로 HTML 생성
   const dom = document.createElement(element.type);
-
+  // element props를 기반으로 처리하기
   if (element.props) {
     for (const [key, value] of Object.entries(element.props)) {
       if (key === "children") {
-        // 여러 개와 혼자일 때 구분
-        if (Array.isArray(value)) {
-          value.forEach((child, index) => {
-            render(child, dom);
-          });
-        } else if (value !== null && value !== undefined) {
-          render(value, dom);
-        }
+        // 자식 노드 처리
+        const children = Array.isArray(value)
+          ? value
+          : value !== undefined && value !== null
+          ? [value]
+          : [];
+        children.forEach((child) => {
+          if (typeof child === "string" || typeof child === "number") {
+            dom.appendChild(document.createTextNode(child.toString()));
+          } else if (typeof child === "object" && child.type) {
+            dom.appendChild(renderRealDOM(child));
+          }
+        });
       } else if (typeof value === "string" || typeof value === "number") {
+        // 일반 속성 처리
         dom.setAttribute(key, value.toString());
+      } else if (key.startsWith("on") && typeof value === "function") {
+        // 이벤트 핸들러 처리
+        dom.addEventListener(
+          key.slice(2).toLowerCase(),
+          value as EventListener
+        );
       }
     }
   }
-  return dom
+  return dom;
 }
 
-export default function render(element: any, container: HTMLElement) {
-      // 텍스트 노드 추가 작업
+export default function render(
+  element: string | number | VNode,
+  container: HTMLElement
+): void {
+  // 루트 초기화
+  container.innerHTML = "";
+
   if (typeof element === "string" || typeof element === "number") {
-    const textNode = document.createTextNode(element.toString());
-    container.appendChild(textNode);
+    container.appendChild(document.createTextNode(element.toString()));
     return;
   }
-  // 객체 생성 분기처리
+
   if (!element || typeof element !== "object" || !element.type) {
     return;
   }
