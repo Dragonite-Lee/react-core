@@ -2,26 +2,30 @@ import render from "../render";
 import { VNode } from "../type";
 
 // 상태 관리 전역 변수
-let state: any[] = [];
+let states: any[] = [];
 let stateIndex = 0;
 let currentComponent: () => VNode;
 let rootContainer: HTMLElement;
 
 export function useState<T>(initialValue: T): [T, (newValue: T) => void] {
-  const currentIndex = stateIndex; // -> state 갯수를 useState가 실행되는 횟수만큼 만들기
-  stateIndex++;
-
-  if (state[currentIndex] === undefined) {
-    state[currentIndex] = initialValue;
+  const key = stateIndex;
+  if (states.length === key) {
+    states.push(initialValue);
   }
 
-  // 새로운 state를 할당하면 rerender
+  const state = states[key];
+
   const setState = (newValue: T) => {
-    state[currentIndex] = newValue;
+    if (newValue === state) return;
+    // 배열이나 객체일 때 비교하려고 삽입
+    if (JSON.stringify(newValue) === JSON.stringify(state)) return;
+
+    states[key] = newValue;
     rerender();
   };
-  
-  return [state[currentIndex], setState];
+
+  stateIndex++;
+  return [state, setState];
 }
 
 function rerender() {
@@ -30,8 +34,11 @@ function rerender() {
   render(newVNode, rootContainer);
 }
 
-export function renderComponent(component: () => VNode, container: HTMLElement) {
-  state = [];
+export function renderComponent(
+  component: () => VNode,
+  container: HTMLElement
+) {
+  states = [];
   stateIndex = 0;
   currentComponent = component;
   rootContainer = container;
