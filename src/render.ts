@@ -5,7 +5,7 @@ function appendChildren(
   children: VNode["props"]["children"]
 ) {
   if (!children) return;
-  const childArray = Array.isArray(children) ? children : [children];
+  const childArray = Array.isArray(children) ? children.flat() : [children];
   childArray.forEach((child) => {
     if (typeof child === "string" || typeof child === "number") {
       dom.appendChild(document.createTextNode(child.toString()));
@@ -17,16 +17,19 @@ function appendChildren(
 
 function renderRealDOM(element: VNode): HTMLElement {
   const dom = document.createElement(element.type);
+
   if (element.props) {
     for (const [key, value] of Object.entries(element.props)) {
       if (key === "children") {
+      
         appendChildren(dom, value as VNode["props"]["children"]);
       } else if (typeof value === "string" || typeof value === "number") {
         dom.setAttribute(key, value.toString());
       } else if (key.startsWith("on") && typeof value === "function") {
-        const eventName = key.slice(2).toLowerCase();
-        console.log(`Adding ${eventName} listener to`, dom);
-        dom.addEventListener(eventName, value as EventListener);
+        dom.addEventListener(
+          key.slice(2).toLowerCase(),
+          value as EventListener
+        );
       }
     }
   }
@@ -38,9 +41,9 @@ export default function render(element: VNode, container: HTMLElement): void {
   if (!prevVNode) {
     container.appendChild(renderRealDOM(element));
   } else if (JSON.stringify(prevVNode) !== JSON.stringify(element)) {
-    container.innerHTML = ""; // 변경 시에만 갱신
+    container.innerHTML = "";
     container.appendChild(renderRealDOM(element));
-  } 
+  }
   prevVNode = element;
 }
 

@@ -15,6 +15,7 @@ const rerender = () => {
   if (!rootContainer) {
     return;
   }
+
   stateIndex = 0;
   const newVNode = currentComponent();
   render(newVNode, rootContainer);
@@ -30,8 +31,6 @@ export function useState<T>(initialValue: T): [T, (newValue: T) => void] {
 
   const setState = (newValue: T) => {
     if (newValue === state) return;
-    // 배열이나 객체일 때 비교하려고 삽입
-    if (JSON.stringify(newValue) === JSON.stringify(state)) return;
 
     states[key] = newValue;
     rerender();

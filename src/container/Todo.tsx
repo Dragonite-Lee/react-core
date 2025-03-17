@@ -4,36 +4,33 @@ export default function Todo() {
   const [todos, setTodos] = useState<{ text: string; completed: boolean }[]>(
     []
   );
-
-  console.log("todos: ", todos);
   const [inputValue, setInputValue] = useState("");
-
   const [inputRef, setInputRef] = useState<HTMLInputElement | null>(null);
 
   const handleInputChange = (e: Event) => {
     const target = e.target as HTMLInputElement;
-    console.log("target: ", target.value);
     setInputValue(target.value);
-  };
-
-  const handleAddTodo = (e?: Event) => {
-    if (e) e.preventDefault(); 
-
-    if (inputValue.trim()) {
-      if (inputRef) {
-        inputRef.blur();
-      }
-
-      const newTodos = [...todos, { text: inputValue, completed: false }];
-      setTodos(newTodos);
-      setInputValue("");
+    if (e) e.preventDefault();
+    if (inputRef) {
+      inputRef.blur();
     }
   };
 
-  const handleToggleTodo = (index: number) => {
+  const handleAddTodo = (e?: Event) => {
+    if (e) e.preventDefault();
+    if (inputValue.trim()) {
+      const newTodos = [...todos, { text: inputValue, completed: false }];
+      setTodos(newTodos);
+      setInputValue("");
+      if (inputRef) inputRef.blur(); 
+    }
+  };
+
+  const handleToggleTodo = (index: number) => (e: Event) => {
+    const target = e.target as HTMLInputElement;
     setTodos(
       todos.map((todo, i) =>
-        i === index ? { ...todo, completed: !todo.completed } : todo
+        i === index ? { ...todo, completed: target.checked } : todo
       )
     );
   };
@@ -43,6 +40,7 @@ export default function Todo() {
       setInputRef(el);
     }
   };
+
 
   return (
     <div>
@@ -61,8 +59,8 @@ export default function Todo() {
             <li>
               <input
                 type="checkbox"
-                checked={todo.completed}
                 onChange={() => handleToggleTodo(index)}
+                checked={todo.completed}
               />
               {todo.text}
             </li>
