@@ -1,6 +1,5 @@
 import { VNode } from "./type";
 
-
 function renderRealDOM(element: VNode): HTMLElement {
   // element type을 기반으로 HTML 생성
   const dom = document.createElement(element.type);
@@ -55,4 +54,4 @@ export default function render(
   container.appendChild(renderRealDOM(element));
 }
 
-// 컴포넌트 유형이 항상다르다고 생각하여 diff를 진행하지 않고 트리 자체를 새로운 트리로 대체한다.
+// 컴포넌트 유형이 항상다르다고 생각하여 diff를 진행하지 않고 트리 자체를 새로운 트리로 대체한다. 이용하기!
