@@ -8,11 +8,17 @@ let stateIndex = 0;
 let currentComponent: () => VNode;
 let rootContainer: HTMLElement;
 
-const debouncedRerender = debounceFrame(() => {
+const rerender = () => {
+  if (!currentComponent || typeof currentComponent !== "function") {
+    return;
+  }
+  if (!rootContainer) {
+    return;
+  }
   stateIndex = 0;
   const newVNode = currentComponent();
   render(newVNode, rootContainer);
-});
+};
 
 export function useState<T>(initialValue: T): [T, (newValue: T) => void] {
   const key = stateIndex;
@@ -28,7 +34,7 @@ export function useState<T>(initialValue: T): [T, (newValue: T) => void] {
     if (JSON.stringify(newValue) === JSON.stringify(state)) return;
 
     states[key] = newValue;
-    debouncedRerender();
+    rerender();
   };
 
   stateIndex++;
