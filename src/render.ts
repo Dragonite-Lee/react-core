@@ -17,19 +17,21 @@ function appendChildren(
 
 function renderRealDOM(element: VNode): HTMLElement {
   const dom = document.createElement(element.type);
-
   if (element.props) {
     for (const [key, value] of Object.entries(element.props)) {
       if (key === "children") {
-      
         appendChildren(dom, value as VNode["props"]["children"]);
       } else if (typeof value === "string" || typeof value === "number") {
         dom.setAttribute(key, value.toString());
+      } else if (key === "checked") {
+        (dom as HTMLInputElement).checked = !!value;
       } else if (key.startsWith("on") && typeof value === "function") {
         dom.addEventListener(
           key.slice(2).toLowerCase(),
           value as EventListener
         );
+      } else if (key === "ref" && typeof value === "function") {
+        value(dom);
       }
     }
   }

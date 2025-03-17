@@ -15,11 +15,13 @@ const rerender = () => {
   if (!rootContainer) {
     return;
   }
-
   stateIndex = 0;
   const newVNode = currentComponent();
   render(newVNode, rootContainer);
 };
+
+// 디바운스된 rerender
+const debouncedRerender = debounceFrame(rerender);
 
 export function useState<T>(initialValue: T): [T, (newValue: T) => void] {
   const key = stateIndex;
@@ -33,7 +35,7 @@ export function useState<T>(initialValue: T): [T, (newValue: T) => void] {
     if (newValue === state) return;
 
     states[key] = newValue;
-    rerender();
+    debouncedRerender();
   };
 
   stateIndex++;

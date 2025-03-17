@@ -5,42 +5,26 @@ export default function Todo() {
     []
   );
   const [inputValue, setInputValue] = useState("");
-  const [inputRef, setInputRef] = useState<HTMLInputElement | null>(null);
-
   const handleInputChange = (e: Event) => {
     const target = e.target as HTMLInputElement;
     setInputValue(target.value);
-    if (e) e.preventDefault();
-    if (inputRef) {
-      inputRef.blur();
-    }
   };
 
-  const handleAddTodo = (e?: Event) => {
-    if (e) e.preventDefault();
+  const handleAddTodo = () => {
     if (inputValue.trim()) {
       const newTodos = [...todos, { text: inputValue, completed: false }];
       setTodos(newTodos);
       setInputValue("");
-      if (inputRef) inputRef.blur(); 
     }
   };
 
-  const handleToggleTodo = (index: number) => (e: Event) => {
-    const target = e.target as HTMLInputElement;
+  const handleToggleTodo = (index: number) => () => {
     setTodos(
       todos.map((todo, i) =>
-        i === index ? { ...todo, completed: target.checked } : todo
+        i === index ? { ...todo, completed: !todo.completed } : todo
       )
     );
   };
-
-  const setInputRefCallback = (el: HTMLInputElement) => {
-    if (el && !inputRef) {
-      setInputRef(el);
-    }
-  };
-
 
   return (
     <div>
@@ -51,17 +35,12 @@ export default function Todo() {
           value={inputValue}
           onChange={handleInputChange}
           placeholder="Add todo"
-          ref={setInputRefCallback}
         />
         <button onClick={handleAddTodo}>Add Todo</button>
         <ul>
           {todos.map((todo, index) => (
-            <li>
-              <input
-                type="checkbox"
-                onChange={() => handleToggleTodo(index)}
-                checked={todo.completed}
-              />
+            <li onClick={handleToggleTodo(index)}>
+              <input type="checkbox" checked={todo.completed} />
               {todo.text}
             </li>
           ))}
