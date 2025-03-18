@@ -1,9 +1,9 @@
 import { useState } from "../hooks/useState";
 
 export default function Todo() {
-  const [todos, setTodos] = useState<{ text: string; completed: boolean }[]>(
-    []
-  );
+  const [todos, setTodos] = useState<
+    { id: number; text: string; completed: boolean }[]
+  >([]);
   const [inputValue, setInputValue] = useState("");
   const handleInputChange = (e: Event) => {
     const target = e.target as HTMLInputElement;
@@ -12,16 +12,23 @@ export default function Todo() {
 
   const handleAddTodo = () => {
     if (inputValue.trim()) {
-      const newTodos = [...todos, { text: inputValue, completed: false }];
+      const newTodos = [
+        ...todos,
+        { id: Date.now(), text: inputValue, completed: false },
+      ];
       setTodos(newTodos);
       setInputValue("");
     }
   };
 
-  const handleToggleTodo = (index: number) => () => {
+  const handleDeleteTodo = (id: number) => () => {
+    setTodos(todos.filter((todo) => todo.id !== id));
+  };
+
+  const handleToggleTodo = (id: number) => () => {
     setTodos(
-      todos.map((todo, i) =>
-        i === index ? { ...todo, completed: !todo.completed } : todo
+      todos.map((todo) =>
+        todo.id === id ? { ...todo, completed: !todo.completed } : todo
       )
     );
   };
@@ -38,11 +45,18 @@ export default function Todo() {
         />
         <button onClick={handleAddTodo}>Add Todo</button>
         <ul>
-          {todos.map((todo, index) => (
-            <li onClick={handleToggleTodo(index)}>
-              <input type="checkbox" checked={todo.completed} />
-              {todo.text}
-            </li>
+          {todos.map((todo) => (
+            <div>
+              <li key={todo.id}>
+                <input
+                  type="checkbox"
+                  checked={todo.completed}
+                  onClick={handleToggleTodo(todo.id)}
+                />
+                {todo.text}
+                <button onClick={handleDeleteTodo(todo.id)}>삭제</button>
+              </li>
+            </div>
           ))}
         </ul>
       </div>
