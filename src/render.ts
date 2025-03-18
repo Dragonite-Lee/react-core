@@ -27,11 +27,9 @@ function renderRealDOM(element: VNode): HTMLElement {
         (dom as HTMLInputElement).checked = !!value;
       } else if (key.startsWith("on") && typeof value === "function") {
         dom.addEventListener(
-          key.slice(2).toLowerCase(),
+          key.toLowerCase(),
           value as EventListener
         );
-      } else if (key === "ref" && typeof value === "function") {
-        value(dom);
       }
     }
   }
