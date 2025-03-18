@@ -19,17 +19,14 @@ export default function createElement(
     };
   }
 
-  const filteredChildren = children.filter(
-    (child) => child !== undefined && child !== null
-  );
-  const hasChildren =
-    filteredChildren.length > 0 ||
-    (props?.children && props.children.length > 0);
+  const effectiveChildren =
+    props?.children ??
+    children.filter((child) => child !== undefined && child !== null);
   return {
     type,
     props: {
-      ...(props ?? {}),
-      ...(hasChildren ? { children: props?.children ?? children } : {}),
+      ...(props || {}),
+      ...(effectiveChildren.length > 0 ? { children: effectiveChildren } : {}),
     },
   };
 }

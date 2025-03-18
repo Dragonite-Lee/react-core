@@ -48,13 +48,15 @@ export default function Todo() {
           {todos.map((todo) => (
             <div>
               <li key={todo.id}>
-                <input
-                  type="checkbox"
-                  checked={todo.completed}
-                  onClick={handleToggleTodo(todo.id)}
-                />
-                {todo.text}
-                <button onClick={handleDeleteTodo(todo.id)}>삭제</button>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={todo.completed}
+                    onClick={handleToggleTodo(todo.id)}
+                  />
+                  {todo.text}
+                  <button onClick={handleDeleteTodo(todo.id)}>삭제</button>
+                </label>
               </li>
             </div>
           ))}
