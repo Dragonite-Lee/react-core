@@ -15,7 +15,14 @@ export type JSX = (type: ElementType, config: jsxProps, key?: Key) => any;
 export type Key = string | number | bigint | undefined;
 
 type Props = {
-  [key: string]: string | number | Function | VNode | VNode[] | (string | number | VNode)[] | undefined;
+  [key: string]:
+    | string
+    | number
+    | Function
+    | VNode
+    | VNode[]
+    | (string | number | VNode)[]
+    | undefined;
   children?: string | number | VNode | (string | number | VNode)[];
 };
 
@@ -23,3 +30,5 @@ export type VNode = {
   type: string;
   props?: Props;
 };
+
+export type SetStateAction<T> = T | ((prev: T) => T);

@@ -1,5 +1,5 @@
 import render from "../render";
-import { VNode } from "../type";
+import { SetStateAction, VNode } from "../type";
 import { debounceFrame } from "./debounce";
 
 // 상태 관리 전역 변수
@@ -23,7 +23,9 @@ const rerender = () => {
 // 디바운스된 rerender
 const debouncedRerender = debounceFrame(rerender);
 
-export function useState<T>(initialValue: T): [T, (newValue: T) => void] {
+export function useState<T>(
+  initialValue: T
+): [T, (newValue: SetStateAction<T>) => void] {
   const key = stateIndex;
   if (states.length === key) {
     states.push(initialValue);
@@ -31,10 +33,13 @@ export function useState<T>(initialValue: T): [T, (newValue: T) => void] {
 
   const state = states[key];
 
-  const setState = (newValue: T) => {
-    if (newValue === state) return;
-
-    states[key] = newValue;
+  const setState = (newValue: SetStateAction<T>) => {
+    const updatedValue =
+      typeof newValue === "function"
+        ? (newValue as (prev: T) => T)(state)
+        : newValue;
+    if (updatedValue === state) return;
+    states[key] = updatedValue;
     debouncedRerender();
   };
 
