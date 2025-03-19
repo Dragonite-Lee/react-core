@@ -1,50 +1,63 @@
-import { VNode } from "./type";
+import { VNode } from './type';
+
+// 타입 가드 사용함
+const isVNode = (child: unknown): child is VNode =>
+  typeof child === 'object' && child !== null && 'type' in child;
+
+const appendChildToDOM = (
+  dom: HTMLElement,
+  child: VNode['props']['children']
+) => {
+  if (typeof child === 'string' || typeof child === 'number') {
+    dom.appendChild(document.createTextNode(child.toString()));
+  } else if (isVNode(child)) {
+    dom.appendChild(renderRealDOM(child));
+  }
+};
 
 function appendChildren(
   dom: HTMLElement,
-  children: VNode["props"]["children"]
-) {
+  children: VNode['props']['children']
+): void {
   if (!children) return;
+
   const childArray = Array.isArray(children) ? children.flat() : [children];
-  childArray.forEach((child) => {
-    if (typeof child === "string" || typeof child === "number") {
-      dom.appendChild(document.createTextNode(child.toString()));
-    } else if (typeof child === "object" && child !== null && "type" in child) {
-      dom.appendChild(renderRealDOM(child as VNode));
-    }
-  });
+  childArray.forEach((child) => appendChildToDOM(dom, child));
 }
 
-function renderRealDOM(element: VNode): HTMLElement {
-  const dom = document.createElement(element.type);
-  if (element.props) {
-    for (const [key, value] of Object.entries(element.props)) {
-      if (key === "children") {
-        appendChildren(dom, value as VNode["props"]["children"]);
-      } else if (typeof value === "string" || typeof value === "number") {
-        dom.setAttribute(key, value.toString());
-      } else if (key === "checked") {
+function renderRealDOM(vnode: VNode): HTMLElement {
+  const dom = document.createElement(vnode.type);
+
+  if (!vnode.props) return dom;
+
+  for (const [key, value] of Object.entries(vnode.props)) {
+    switch (key) {
+      case 'children':
+        appendChildren(dom, value as VNode['props']['children']);
+        break;
+      case 'checked':
         (dom as HTMLInputElement).checked = !!value;
-      } else if (key.startsWith("on") && typeof value === "function") {
-        dom.addEventListener(
-          key.slice(2).toLowerCase(),
-          value as EventListener
-        );
-      }
+        break;
+      default:
+        if (key.startsWith('on') && typeof value === 'function') {
+          const eventName = key.slice(2).toLowerCase();
+          dom.addEventListener(eventName, value as EventListener);
+        } else if (typeof value === 'string' || typeof value === 'number') {
+          dom.setAttribute(key, value.toString());
+        }
     }
   }
+
   return dom;
 }
 
 let prevVNode: VNode | null = null;
-export default function render(element: VNode, container: HTMLElement): void {
-  if (!prevVNode) {
-    container.appendChild(renderRealDOM(element));
-  } else if (JSON.stringify(prevVNode) !== JSON.stringify(element)) {
-    container.innerHTML = "";
-    container.appendChild(renderRealDOM(element));
-  }
-  prevVNode = element;
-}
 
-// 컴포넌트 유형이 항상다르다고 생각하여 diff를 진행하지 않고 트리 자체를 새로운 트리로 대체한다. 이용하기!
+export default function render(vnode: VNode, container: HTMLElement): void {
+  if (!prevVNode) {
+    container.appendChild(renderRealDOM(vnode));
+  } else if (JSON.stringify(prevVNode) !== JSON.stringify(vnode)) {
+    container.replaceChildren(renderRealDOM(vnode));
+  }
+  prevVNode = { ...vnode };
+}

@@ -27,6 +27,7 @@ type Props = {
 };
 
 export type VNode = {
+  useState<T extends {}>(initialValue: T): [T, (newValue: SetStateAction<T>) => void];
   type: string;
   props?: Props;
 };
