@@ -5,6 +5,8 @@ export default function Counter() {
 
   const handleIncrement = () => {
     setCount((prev: number) => prev + 1);
+    setCount((prev: number) => prev + 1);
+    setCount((prev: number) => prev + 1);
   };
   const handleDecrement = () => {
     setCount((prev: number) => prev - 1);

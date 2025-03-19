@@ -27,7 +27,7 @@ function renderRealDOM(element: VNode): HTMLElement {
         (dom as HTMLInputElement).checked = !!value;
       } else if (key.startsWith("on") && typeof value === "function") {
         dom.addEventListener(
-          key.toLowerCase(),
+          key.slice(2).toLowerCase(),
           value as EventListener
         );
       }

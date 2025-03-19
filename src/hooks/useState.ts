@@ -34,11 +34,13 @@ export function useState<T>(
   const state = states[key];
 
   const setState = (newValue: SetStateAction<T>) => {
+    const currentState = states[key];
     const updatedValue =
       typeof newValue === "function"
-        ? (newValue as (prev: T) => T)(state)
+        ? (newValue as (prev: T) => T)(currentState)
         : newValue;
-    if (updatedValue === state) return;
+
+    if (updatedValue === currentState) return;
     states[key] = updatedValue;
     debouncedRerender();
   };
