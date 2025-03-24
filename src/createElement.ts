@@ -7,25 +7,26 @@ export default function createElement(
 ): { type: string | ElementType; props: any } {
   if (typeof type === "function") {
     const result = type(props ?? {});
-
     if (result && typeof result === "object" && "type" in result) {
       return result;
     }
-
     return {
       type,
       props: {
         ...(result ?? {}),
-        children,
+        children: children.length > 0 ? children : undefined,
       },
     };
   }
 
+  const effectiveChildren =
+    props?.children ??
+    children.filter((child) => child !== undefined && child !== null);
   return {
     type,
     props: {
-      ...(props ?? {}),
-      children: props?.children ?? children,
+      ...(props || {}),
+      ...(effectiveChildren.length > 0 ? { children: effectiveChildren } : {}),
     },
   };
 }
