@@ -1,7 +1,9 @@
 import { useState } from "../hooks/useState";
+import { VNode } from "../type";
 
-export default function Counter() {
-  const [count, setCount] = useState(0);
+export default function Counter(): VNode {
+  const [count, setCount] = useState<number>(0);
+  console.log('count: ', count);
 
   const handleIncrement = () => {
     setCount((prev: number) => prev + 1);

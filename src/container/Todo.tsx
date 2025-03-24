@@ -4,7 +4,7 @@ export default function Todo() {
   const [todos, setTodos] = useState<
     { id: number; text: string; completed: boolean }[]
   >([]);
-  const [inputValue, setInputValue] = useState("");
+  const [inputValue, setInputValue] = useState<string>("");
   const handleInputChange = (e: Event) => {
     const target = e.target as HTMLInputElement;
     setInputValue(target.value);
