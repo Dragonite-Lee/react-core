@@ -28,10 +28,10 @@ function mergeTextNodes(children: (VNode | string | number)[]): (VNode | string)
   return merged;
 }
 
-const appendChildToDOM = (
+function appendChildToDOM(
   dom: HTMLElement,
   child: VNode | string
-) => {
+) {
   if (typeof child === "string") {
     dom.appendChild(document.createTextNode(child));
   } else if (isVNode(child)) {
