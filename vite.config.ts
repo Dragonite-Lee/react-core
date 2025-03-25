@@ -1,34 +1,16 @@
+import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 import babel from "vite-plugin-babel";
-import path from "path";
 
+// https://vite.dev/config/
 export default defineConfig({
   plugins: [
+    react(),
     babel({
-      filter: /\.[jt]sx$/, // .ts, .tsx, .js, .jsx 대상
       babelConfig: {
-        presets: ["@babel/preset-typescript"],
-        plugins: [
-          [
-            "@babel/plugin-transform-react-jsx",
-            {
-              runtime: "automatic",
-              //   pragma: 'createElement',
-              development: false,
-              importSource: "custom-jsx",
-            },
-          ],
-        ],
+        babelrc: false,
+        configFile: true,
       },
     }),
   ],
-  build: {
-    minify: false,
-    sourcemap: true,
-  },
-  resolve: {
-    alias: {
-      "custom-jsx": path.resolve(__dirname, "src/custom-jsx"),
-    },
-  },
 });

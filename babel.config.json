@@ -1,0 +1,14 @@
+
+{
+    "plugins": [
+      [
+        "@babel/plugin-transform-react-jsx",
+        {
+          "throwIfNamespace": true,
+          "runtime": "automatic",
+          "importSource": "src/custom-jsx"
+        }
+      ]
+    ]
+  }
+  

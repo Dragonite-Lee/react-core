@@ -1,17 +1,18 @@
-import createElement from "../createElement";
-import { JSX } from "../type";
+import { createElement } from "../createElement";
 
-export const jsx: JSX = (type, config, _key) => {
-  const { children, ...props } = config || {};
+export function jsx(type, config, key) {
+  const { children, ...props } = config;
+  return createElement(type, { ...props, key }, children);
+}
 
-  return createElement(type, props, children);
-};
+export function jsxs(type, config, key) {
+  const { children, ...props } = config;
+  return createElement(type, { ...props, key }, children);
+}
 
-export const jsxs: JSX = (type, config, key) => {
-  const { children, ...props } = config || {};
-  const childArray = Array.isArray(children) ? children : children !== undefined ? [children] : [];
-
-  return createElement(type, { ...props, key }, ...childArray);
-};
-
-export const Fragment = Symbol.for("jsx.fragment");
+export function Fragment(props) {
+  return {
+    key: props.key,
+    props: { children: props.children },
+  };
+}

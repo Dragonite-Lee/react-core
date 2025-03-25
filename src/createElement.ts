@@ -1,32 +1,23 @@
-import { ElementType, jsxProps } from "./type";
+export function createElement(type, config, ...children) {
+  const child = (() => {
+    if (children.length === 0) return undefined;
+    if (children.length === 1) return children[0];
+    return children; // children이 여러 개일 때 처리
+  })();
 
-export default function createElement(
-  type: ElementType,
-  props?: jsxProps,
-  ...children: any[]
-): { type: string | ElementType; props: any } {
+  const { key = null, ...props } = config || {};
+
   if (typeof type === "function") {
-    const result = type(props ?? {});
-    if (result && typeof result === "object" && "type" in result) {
-      return result;
-    }
-    return {
-      type,
-      props: {
-        ...(result ?? {}),
-        children: children.length > 0 ? children : undefined,
-      },
-    };
+    return type({ key, children: child, ...props });
   }
 
-  const effectiveChildren =
-    props?.children ??
-    children.filter((child) => child !== undefined && child !== null);
   return {
     type,
+    key,
     props: {
-      ...(props || {}),
-      ...(effectiveChildren.length > 0 ? { children: effectiveChildren } : {}),
+      children: child,
+      ...props,
     },
   };
 }
+
