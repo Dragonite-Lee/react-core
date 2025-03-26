@@ -1,7 +1,9 @@
 import App from "./App";
-import { renderComponent } from "./hooks/useState";
+import createElement from "./createElement";
+import { createRoot } from "./render";
 
-const root = document.getElementById("root");
-if (root) {
-  renderComponent(App, root);
+const rootElement = document.getElementById("root");
+if (rootElement) {
+  const root = createRoot(rootElement);
+  root.render(createElement(App));
 }

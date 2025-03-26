@@ -1,36 +1,37 @@
-export interface jsxProps {
+// createElement 사용
+export interface JSXProps {
+  key?: string | null;
   children?: any;
   [key: string]: any;
 }
 
+export type ElementType = string | ((props: JSXProps) => any);
+
 export interface JSXNode {
   type: ElementType;
-  config: jsxProps;
-  key: Key;
+  key: string | null;
+  props: JSXProps;
 }
-export type ElementType = string | Function;
+
+// renderer
 export type JSXElement = JSXNode | string | number | boolean | null | undefined;
 
-export type JSX = (type: ElementType, config: jsxProps, key?: Key) => any;
+export type JSX = (type: ElementType, config: JSXProps, key?: Key) => any;
 export type Key = string | number | bigint | undefined;
 
-type Props = {
-  [key: string]:
-    | string
-    | number
-    | Function
-    | VNode
-    | VNode[]
-    | (string | number | VNode)[]
-    | undefined;
-  children?: string | number | VNode | (string | number | VNode)[];
-};
+// type Props = {
+//   [key: string]:
+//     | string
+//     | number
+//     | Function
+//     | JSXNode
+//     | JSXNode[]
+//     | (string | number | JSXNode)[]
+//     | undefined;
+//   children?: string | number | JSXNode | (string | number | JSXNode)[];
+// };
 
-export type VNode = {
-  useState<T extends {}>(initialValue: T): [T, (newValue: SetStateAction<T>) => void];
-  type: string;
-  props?: Props;
-};
+
 
 export type SetStateAction<T> = T | ((prev: T) => T);
 

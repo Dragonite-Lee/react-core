@@ -1,23 +1,23 @@
 import { useEffect } from "../hooks/useEffect";
 import { useState } from "../hooks/useState";
-import { VNode } from "../type";
+import { JSXNode } from "../type";
 
-export default function Counter(): VNode {
+export default function Counter(): JSXNode {
   const [count, setCount] = useState<number>(0);
 
-  // 타이머 설정: 매 초마다 콘솔에 메시지 출력
-  useEffect(() => {
-    console.log("Timer started");
-    const timer = setInterval(() => {
-      console.log("Timer tick, count:", count);
-    }, 1000);
+  // // 타이머 설정: 매 초마다 콘솔에 메시지 출력
+  // useEffect(() => {
+  //   console.log("Timer started");
+  //   const timer = setInterval(() => {
+  //     console.log("Timer tick, count:", count);
+  //   }, 1000);
 
-    // 클린업 함수: 컴포넌트 언마운트 시 타이머 정리
-    return () => {
-      console.log("Timer cleared");
-      clearInterval(timer);
-    };
-  }, [count]); // count가 변경될 때마다 이펙트 실행
+  //   // 클린업 함수: 컴포넌트 언마운트 시 타이머 정리
+  //   return () => {
+  //     console.log("Timer cleared");
+  //     clearInterval(timer);
+  //   };
+  // }, [count]); // count가 변경될 때마다 이펙트 실행
 
   const handleIncrement = (e: any) => {
     console.log("Increment - Synthetic Event:", e.type, e.target);
