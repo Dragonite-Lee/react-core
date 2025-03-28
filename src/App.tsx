@@ -6,11 +6,8 @@ import { JSXNode } from "./type/index";
 export default function App(): JSXNode {
   return (
     <div id="app">
-      {/* 카운터 */}
-      {/* <Counter /> */}
-
-      {/* TODO */}
-      {/* <Todo /> */}
+      <Counter />
+      <Todo />
       <h1>hello</h1>
       <div>
         <p>안녕</p>

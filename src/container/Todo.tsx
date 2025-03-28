@@ -1,16 +1,20 @@
 import { useState } from "../hooks/useState";
+import { SyntheticEventProps } from "../type";
 
 export default function Todo() {
   const [todos, setTodos] = useState<
     { id: number; text: string; completed: boolean }[]
   >([]);
   const [inputValue, setInputValue] = useState<string>("");
-  const handleInputChange = (e: Event) => {
+
+  const handleInputChange = (e: SyntheticEventProps) => {
     const target = e.target as HTMLInputElement;
     setInputValue(target.value);
   };
 
-  const handleAddTodo = () => {
+  const handleAddTodo = (e: SyntheticEventProps) => {
+    console.log("e: ", e);
+    e.preventDefault();
     if (inputValue.trim()) {
       const newTodos = [
         ...todos,
@@ -25,14 +29,6 @@ export default function Todo() {
     setTodos(todos.filter((todo) => todo.id !== id));
   };
 
-  const handleToggleTodo = (id: number) => () => {
-    setTodos(
-      todos.map((todo) =>
-        todo.id === id ? { ...todo, completed: !todo.completed } : todo
-      )
-    );
-  };
-
   return (
     <div>
       <h1>TODO List</h1>
@@ -43,17 +39,20 @@ export default function Todo() {
           onChange={handleInputChange}
           placeholder="Add todo"
         />
-        <button onClick={handleAddTodo}>Add Todo</button>
+        <button
+          type="button"
+          onClick={(e) => {
+            handleAddTodo(e);
+          }}
+        >
+          Add Todo
+        </button>
         <ul>
           {todos.map((todo) => (
-            <div>
-              <li key={todo.id}>
+            <div key={todo.id}>
+              <li>
+                <input type="checkbox" value={todo.completed} />
                 <label>
-                  <input
-                    type="checkbox"
-                    checked={todo.completed}
-                    onClick={handleToggleTodo(todo.id)}
-                  />
                   {todo.text}
                   <button onClick={handleDeleteTodo(todo.id)}>삭제</button>
                 </label>

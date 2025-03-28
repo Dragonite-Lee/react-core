@@ -35,3 +35,12 @@ export type Key = string | number | bigint | undefined;
 
 export type SetStateAction<T> = T | ((prev: T) => T);
 
+export interface SyntheticEventProps {
+  type: string;
+  target: EventTarget | null;
+  currentTarget: EventTarget | null;
+  nativeEvent: Event;
+  stopPropagation(): void;
+  preventDefault(): void;
+  isDefaultPrevented(): boolean;
+}
