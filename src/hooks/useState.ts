@@ -1,69 +1,25 @@
-import render from "../render";
-import { SetStateAction, VNode } from "../type";
-import { debounceFrame } from "./debounce";
+import { stateManager, rerender, getComponentState } from "./core";
+import { SetStateAction } from "../type";
 
-interface StateManager {
-  states: any[];
-  index: number;
-  pendingUpdates: Record<number, SetStateAction<any>[]>;
-  component: () => VNode;
-  container: HTMLElement;
-}
+export function useState<T>(
+  initialValue: T
+): [T, (newValue: SetStateAction<T>) => void] {
+  const componentState = getComponentState(stateManager.currentComponent!);
+  const key = componentState.index;
 
-const stateManager: StateManager = {
-  states: [],
-  index: 0,
-  pendingUpdates: {},
-  component: () => ({} as VNode), 
-  container: document.createElement("div"), 
-};
-
-const applyPendingUpdates = () => {
-  for (const [key, updates] of Object.entries(stateManager.pendingUpdates)) {
-    let currentState = stateManager.states[Number(key)];
-    updates.forEach((update) => {
-      currentState = typeof update === "function" 
-        ? (update as (prev: any) => any)(currentState)
-        : update;
-    });
-    stateManager.states[Number(key)] = currentState;
-  }
-  stateManager.pendingUpdates = {};
-};
-
-const rerender = () => {
-  applyPendingUpdates();
-  stateManager.index = 0;
-  const newVNode = stateManager.component();
-  render(newVNode, stateManager.container);
-};
-
-const debouncedRerender = debounceFrame(rerender);
-
-export function useState<T>(initialValue: T): [T, (newValue: SetStateAction<T>) => void] {
-  const key = stateManager.index;
-
-  if (stateManager.states.length === key) {
-    stateManager.states.push(initialValue);
+  if (componentState.states.length === key) {
+    componentState.states.push(initialValue);
   }
 
-  const state = stateManager.states[key];
+  const state = componentState.states[key] as T;
 
   const setState = (newValue: SetStateAction<T>) => {
-    stateManager.pendingUpdates[key] = stateManager.pendingUpdates[key] || [];
-    stateManager.pendingUpdates[key].push(newValue);
-    debouncedRerender(); 
+    componentState.pendingUpdates[key] = componentState.pendingUpdates[key] || [];
+    componentState.pendingUpdates[key].push(newValue);
+    console.log(`Pending updates after setState for key ${key}:`, componentState.pendingUpdates);
+    rerender(stateManager.currentComponent!);
   };
 
-  stateManager.index++;
+  componentState.index++;
   return [state, setState];
-}
-
-export function renderComponent(component: () => VNode, container: HTMLElement): void {
-  stateManager.states = []; 
-  stateManager.index = 0;
-  stateManager.component = component;
-  stateManager.container = container;
-  const vNode = component();
-  render(vNode, container); 
 }

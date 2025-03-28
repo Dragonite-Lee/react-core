@@ -1,7 +1,8 @@
 import App from "./App";
-import { renderComponent } from "./hooks/useState";
+import { renderComponent } from "./hooks";
 
-const root = document.getElementById("root");
-if (root) {
-  renderComponent(App, root);
+
+const rootElement = document.getElementById("root");
+if (rootElement) {
+  renderComponent(App, rootElement);
 }

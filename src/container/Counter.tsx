@@ -1,14 +1,14 @@
 import { useState } from "../hooks/useState";
+import { JSXNode } from "../type";
 
-export default function Counter() {
-  const [count, setCount] = useState(0);
+export default function Counter(): JSXNode {
+  const [count, setCount] = useState<number>(0);
 
-  const handleIncrement = () => {
-    setCount((prev: number) => prev + 1);
-    setCount((prev: number) => prev + 1);
+  const handleIncrement = (e: any) => {
     setCount((prev: number) => prev + 1);
   };
-  const handleDecrement = () => {
+
+  const handleDecrement = (e: any) => {
     setCount((prev: number) => prev - 1);
   };
 

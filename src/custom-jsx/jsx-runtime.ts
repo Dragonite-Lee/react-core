@@ -7,7 +7,7 @@ export const jsx: JSX = (type, config, _key) => {
   return createElement(type, props, children);
 };
 
-export const jsxs: JSX = (type, config, key) => {
+export const jsxs: JSX = (type, config, key: string | undefined) => {
   const { children, ...props } = config || {};
   const childArray = Array.isArray(children) ? children : children !== undefined ? [children] : [];
 
