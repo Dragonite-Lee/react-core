@@ -1,36 +1,37 @@
-export interface jsxProps {
-  children?: any;
+export const REACT_ELEMENT_TYPE = Symbol.for("react.element");
+export const REACT_FRAGMENT_TYPE = Symbol.for("react.fragment");
+
+export type Key = string | number | null;
+export type Ref = any;
+
+export type FunctionComponent<P = any> = (props: P) => ReactNode;
+
+export type ElementType = string | FunctionComponent<any> | symbol;
+
+export type ReactText = string | number;
+export type ReactNode =
+  | ReactElement
+  | ReactText
+  | boolean
+  | null
+  | undefined
+  | ReactNode[]; 
+
+export interface JSXProps {
+  children?: ReactNode;
   [key: string]: any;
 }
 
-export interface JSXNode {
+export type ReactElement = {
+  $$typeof: symbol;
   type: ElementType;
-  config: jsxProps;
   key: Key;
-}
-export type ElementType = string | Function;
-export type JSXElement = JSXNode | string | number | boolean | null | undefined;
-
-export type JSX = (type: ElementType, config: jsxProps, key?: Key) => any;
-export type Key = string | number | bigint | undefined;
-
-type Props = {
-  [key: string]:
-    | string
-    | number
-    | Function
-    | VNode
-    | VNode[]
-    | (string | number | VNode)[]
-    | undefined;
-  children?: string | number | VNode | (string | number | VNode)[];
+  ref: Ref;
+  props: JSXProps;
 };
 
-export type VNode = {
-  useState<T extends {}>(initialValue: T): [T, (newValue: SetStateAction<T>) => void];
-  type: string;
-  props?: Props;
-};
-
-export type SetStateAction<T> = T | ((prev: T) => T);
-
+export type JSXRuntimeFn = (
+  type: ElementType,
+  config: any,
+  key?: Key
+) => ReactElement;

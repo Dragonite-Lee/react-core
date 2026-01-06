@@ -1,17 +1,45 @@
 import createElement from "../createElement";
-import { JSX } from "../type";
+import {
+  ElementType,
+  JSXProps,
+  JSXRuntimeFn,
+  Key,
+  REACT_FRAGMENT_TYPE,
+  ReactNode,
+} from "../type";
 
-export const jsx: JSX = (type, config, _key) => {
-  const { children, ...props } = config || {};
+const __DEV__ = true;
 
-  return createElement(type, props, children);
-};
+const toChildArray = (children: any): ReactNode[] =>
+  children === undefined ? [] : Array.isArray(children) ? children : [children];
 
-export const jsxs: JSX = (type, config, key) => {
-  const { children, ...props } = config || {};
-  const childArray = Array.isArray(children) ? children : children !== undefined ? [children] : [];
+function _jsx(
+  type: ElementType,
+  config: any,
+  maybeKey: Key | undefined,
+  isStaticChildren: boolean
+) {
+  const cfg = config ?? {};
+  const key: Key = maybeKey ?? cfg.key ?? null;
+  const ref = cfg.ref ?? null;
 
-  return createElement(type, { ...props, key }, ...childArray);
-};
+  const { children, key: _k, ref: _r, ...rest } = cfg;
+  const props: JSXProps = { ...rest };
 
-export const Fragment = Symbol.for("jsx.fragment");
+  const childArgs = toChildArray(children);
+
+  // React DEV에서: static children인 배열을 freeze해서 불변성 가정/버그 탐지
+  if (__DEV__ && isStaticChildren && Array.isArray(children)) {
+    Object.freeze(children);
+  }
+
+  return createElement(type, props, key, ref, ...childArgs);
+}
+
+export const jsx: JSXRuntimeFn = (type, config, maybeKey) =>
+  _jsx(type, config, maybeKey, false);
+
+export const jsxs: JSXRuntimeFn = (type, config, maybeKey) =>
+  _jsx(type, config, maybeKey, true);
+
+export const Fragment = REACT_FRAGMENT_TYPE;
