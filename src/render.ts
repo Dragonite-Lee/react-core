@@ -1,3 +1,5 @@
+import { debounceFrame } from "./hooks/debounce";
+import { beginHooks, endHooks, HookedInstance } from "./hooks/dispatcher";
 import {
   REACT_ELEMENT_TYPE,
   REACT_FRAGMENT_TYPE,
@@ -5,7 +7,7 @@ import {
   ReactNode,
 } from "./type";
 
-type Instance = {
+type Instance = HookedInstance & {
   element: ReactNode;
   start: ChildNode;
   end: ChildNode;
@@ -41,6 +43,29 @@ function removeRange(parent: Node, start: ChildNode, end: ChildNode) {
   }
 }
 
+function moveRange(parent: Node, inst: Instance, before: Node | null) {
+  const frag = document.createDocumentFragment();
+
+  const after = inst.end.nextSibling;
+  let cur: ChildNode | null = inst.start;
+  while (cur && cur !== after) {
+    const next = cur.nextSibling as ChildNode | null;
+    frag.appendChild(cur);
+    cur = next;
+  }
+
+  parent.insertBefore(frag, before);
+}
+
+function unmountInstance(inst: Instance) {
+  if (isElement(inst.element) && typeof inst.element.type === "function") {
+    const effects = inst.effects ?? [];
+    for (const e of effects) {
+      if (typeof e?.cleanup === "function") e.cleanup();
+    }
+  }
+  for (const c of inst.childInstances) unmountInstance(c);
+}
 /**
  * 핵심 변경: Instance를 "DOM fragment"로 만들어서 삽입
  * - fragment/function component/host/text 모두 일관되게 삽입 가능
@@ -57,7 +82,6 @@ function toDomFragment(inst: Instance): DocumentFragment {
 
   const el = inst.element;
 
-  // Function component: childInstances[0]이 실제 렌더 결과
   if (typeof el.type === "function") {
     const child = inst.childInstances[0];
     if (child) frag.appendChild(toDomFragment(child));
@@ -78,7 +102,11 @@ function toDomFragment(inst: Instance): DocumentFragment {
   return frag;
 }
 
-function insertInstanceBefore(parent: Node, inst: Instance, before: Node | null) {
+function insertInstanceBefore(
+  parent: Node,
+  inst: Instance,
+  before: Node | null
+) {
   parent.insertBefore(toDomFragment(inst), before);
 }
 
@@ -154,14 +182,24 @@ function instantiate(element: ReactNode): Instance {
 
   // function component
   if (typeof element.type === "function") {
-    const rendered = element.type(element.props);
-    const child = instantiate(rendered);
-    return {
+    const inst: Instance = {
       element,
-      start: child.start,
-      end: child.end,
-      childInstances: [child],
+      start: document.createComment("fc"),
+      end: document.createComment("fc"),
+      childInstances: [],
+      hooks: element ? [] : [],
+      effects: [],
     };
+
+    beginHooks(inst);
+    const rendered = element.type(element.props);
+    endHooks();
+
+    const child = instantiate(rendered);
+    inst.childInstances = [child];
+    inst.start = child.start;
+    inst.end = child.end;
+    return inst;
   }
 
   // fragment
@@ -231,7 +269,8 @@ function reconcile(
   // text update
   if (
     (typeof element === "string" || typeof element === "number") &&
-    (typeof instance.element === "string" || typeof instance.element === "number")
+    (typeof instance.element === "string" ||
+      typeof instance.element === "number")
   ) {
     if (String(element) !== String(instance.element)) {
       (instance.start as Text).nodeValue = String(element);
@@ -246,10 +285,15 @@ function reconcile(
   // function component update
   if (typeof nextEl.type === "function") {
     const prevChild = instance.childInstances[0] ?? null;
-    const rendered = nextEl.type(nextEl.props);
-    const nextChild = reconcile(parent, prevChild, rendered, before);
 
     instance.element = nextEl;
+
+    beginHooks(instance);
+    const rendered = nextEl.type(nextEl.props);
+    endHooks();
+
+    const nextChild = reconcile(parent, prevChild, rendered, before);
+
     instance.start = nextChild.start;
     instance.end = nextChild.end;
     instance.childInstances = [nextChild];
@@ -313,20 +357,52 @@ function reconcile(
   const prevChildInsts = instance.childInstances;
   const nextChildEls = flatten(toArray(nextEl.props.children));
 
+  const keyedPrev = new Map<any, Instance>();
+  const unkeyedPrev: Instance[] = [];
+
+  for (const ci of prevChildInsts) {
+    const el = ci.element;
+    if (isElement(el) && el.key != null) keyedPrev.set(el.key, ci);
+    else unkeyedPrev.push(ci);
+  }
+
   const nextChildInsts: Instance[] = [];
-  const max = Math.max(prevChildInsts.length, nextChildEls.length);
+  let unkeyIdx = 0;
 
-  for (let i = 0; i < max; i++) {
-    const prevChild = prevChildInsts[i] ?? null;
-    const nextChild = nextChildEls[i];
+  // 1) 업데이트/생성
+  for (const childEl of nextChildEls) {
+    let match: Instance | null = null;
 
-    if (nextChild === undefined) {
-      if (prevChild) removeRange(dom, prevChild.start, prevChild.end);
-      continue;
+    if (isElement(childEl) && childEl.key != null) {
+      match = keyedPrev.get(childEl.key) ?? null;
+      if (match) keyedPrev.delete(childEl.key);
+    } else {
+      match = unkeyedPrev[unkeyIdx++] ?? null;
     }
 
-    const updated = reconcile(dom, prevChild, nextChild, null);
+    // 여기서는 위치(before)는 일단 null(append)로 해도 됨.
+    // 실제 정렬은 아래 moveRange로 맞춘다.
+    const updated = reconcile(dom, match, childEl, null);
     nextChildInsts.push(updated);
+  }
+
+  // 2) 남은 prev 제거
+  for (const leftover of keyedPrev.values()) {
+    unmountInstance(leftover);
+    removeRange(dom, leftover.start, leftover.end);
+  }
+  for (let i = unkeyIdx; i < unkeyedPrev.length; i++) {
+    unmountInstance(unkeyedPrev[i]);
+    removeRange(dom, unkeyedPrev[i].start, unkeyedPrev[i].end);
+  }
+
+  // 3) DOM 재정렬(중요): key 매칭만 해도 "위치 이동"을 안 하면 React처럼 안 됨
+  // 뒤에서 앞으로 reverse로 옮기면 anchor가 안정적임.
+  let anchor: Node | null = null; // null이면 append
+  for (let i = nextChildInsts.length - 1; i >= 0; i--) {
+    const childInst = nextChildInsts[i];
+    moveRange(dom, childInst, anchor);
+    anchor = childInst.start;
   }
 
   instance.element = nextEl;
@@ -337,7 +413,54 @@ function reconcile(
 }
 
 let rootInstance: Instance | null = null;
+let rootElement: ReactNode | null = null;
+let rootContainer: HTMLElement | null = null;
 
 export function render(element: ReactNode, container: HTMLElement) {
+  rootElement = element;
+  rootContainer = container;
+
   rootInstance = reconcile(container, rootInstance, element, null);
+  flushEffects();
+}
+
+const pendingEffects: Array<{
+  inst: HookedInstance;
+  idx: number;
+  effect: () => void | (() => void);
+}> = [];
+
+export function pushPendingEffect(
+  inst: HookedInstance,
+  idx: number,
+  effect: () => void | (() => void)
+) {
+  pendingEffects.push({ inst, idx, effect });
+}
+
+function flushEffects() {
+  while (pendingEffects.length) {
+    const job = pendingEffects.shift()!;
+    job.inst.effects ??= [];
+    job.inst.effects[job.idx] ??= {};
+
+    const prevCleanup = job.inst.effects[job.idx].cleanup;
+    if (typeof prevCleanup === "function") prevCleanup();
+
+    const cleanup = job.effect();
+    job.inst.effects[job.idx].cleanup = cleanup;
+  }
+}
+
+// 업데이트 스케줄러 (frame 단위 디바운스)
+const _doUpdate = () => {
+  if (!rootContainer || rootElement == null) return;
+  rootInstance = reconcile(rootContainer, rootInstance, rootElement, null);
+  flushEffects();
+};
+
+const debouncedUpdate = debounceFrame(_doUpdate);
+
+export function scheduleUpdate() {
+  debouncedUpdate();
 }

@@ -1,7 +1,8 @@
+import { render } from "./render";
+import createElement from "./createElement";
 import App from "./App";
-import { renderComponent } from "./hooks/useState";
 
 const root = document.getElementById("root");
 if (root) {
-  renderComponent(App, root);
+  render(createElement(App, {}), root);
 }
